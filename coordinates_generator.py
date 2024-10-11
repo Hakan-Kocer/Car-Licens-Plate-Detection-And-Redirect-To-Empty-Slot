@@ -10,7 +10,6 @@ class CoordinatesGenerator:
     KEY_QUIT = ord("q")
 
     def __init__(self, image, output):
-
         self.output = output
         self.caption = image
         self.color = COLOR_BLUE
@@ -23,9 +22,8 @@ class CoordinatesGenerator:
         cv2.namedWindow(self.caption, cv2.WINDOW_GUI_EXPANDED)
         cv2.setMouseCallback(self.caption, self.__mouse_callback)
 
-    def generate(self):#tuşa basıldı mı kontrol ediyor
+    def generate(self):  # Checks if a key is pressed
         while True:
-
             cv2.imshow(self.caption, self.image)
             key = cv2.waitKey(0)
 
@@ -33,40 +31,29 @@ class CoordinatesGenerator:
                 self.image = self.image.copy()
             elif key == CoordinatesGenerator.KEY_QUIT:
                 break
+
         cv2.destroyWindow(self.caption)
 
     def __mouse_callback(self, event, x, y, flags, params):
-        if event == cv2.EVENT_LBUTTONDOWN:#herhangi bi yere basıldığında gir
-            self.coordinates.append((x, y))#basıldığı yerleri kaydet
-            self.click_count += 1#kaç defa basıldığına bakar
+        if event == cv2.EVENT_LBUTTONDOWN:  # When clicked on any location
+            self.coordinates.append((x, y))  # Saves the clicked positions
+            self.click_count += 1  # Checks how many times clicked
 
             if self.click_count >= 4:
                 self.__handle_done()
-
             elif self.click_count > 1:
                 self.__handle_click_progress()
 
         cv2.imshow(self.caption, self.image)
 
-    def __handle_click_progress(self):#1 den fazla çizgi varsa arasını çiziyor
+    def __handle_click_progress(self):  # Draws lines between points if more than one click
+        cv2.line(self.image, self.coordinates[-2], self.coordinates[-1], COLOR_BLUE, 1)
 
-        cv2.line(self.image, self.coordinates[-2], self.coordinates[-1], (255, 0, 0), 1)
-
-    def __handle_done(self):#4 yer alındıysa kare çiz
-
-        cv2.line(self.image,
-                     self.coordinates[2],
-                     self.coordinates[3],
-                     self.color,
-                     1)
-        cv2.line(self.image,
-                     self.coordinates[3],
-                     self.coordinates[0],
-                     self.color,
-                     1)
+    def __handle_done(self):  # Draws a square if four points are clicked
+        cv2.line(self.image, self.coordinates[2], self.coordinates[3], self.color, 1)
+        cv2.line(self.image, self.coordinates[3], self.coordinates[0], self.color, 1)
 
         self.click_count = 0
-
         coordinates = np.array(self.coordinates)
 
         self.output.write("-\n          id: " + str(self.ids) + "\n          coordinates: [" +
@@ -77,7 +64,7 @@ class CoordinatesGenerator:
 
         draw_contours(self.image, coordinates, str(self.ids + 1), COLOR_WHITE)
 
-        for i in range(0, 4):
+        for _ in range(4):
             self.coordinates.pop()
 
         self.ids += 1
